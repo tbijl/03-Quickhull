@@ -40,14 +40,12 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- git:    https://github.com/AccelerateHS/accelerate.git
-  commit: 14c43a318ffa280fc6234eb549d69a4c6838fa3d
-#- git:    https://github.com/AccelerateHS/accelerate-llvm.git
-#  commit: 0f92cd6ad324f87378bffbb9b74bbd0722cee417
-#  subdirs:
-#    - accelerate-llvm
-#    - accelerate-llvm-native
-#    - accelerate-llvm-ptx
+- archive: https://github.com/AccelerateHS/accelerate/archive/14c43a318ffa280fc6234eb549d69a4c6838fa3d.zip
+- archive: https://github.com/AccelerateHS/accelerate-llvm/archive/0f92cd6ad324f87378bffbb9b74bbd0722cee417.zip
+  subdirs:
+   - accelerate-llvm
+   - accelerate-llvm-native
+   - accelerate-llvm-ptx
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
