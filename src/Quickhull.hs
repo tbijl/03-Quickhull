@@ -59,7 +59,8 @@ initialPartition points =
 
     -- * Exercise 3
     lowerIndices :: Acc (Vector Int)
-    lowerIndices = undefined
+    lowerIndices = prescanl (+) 0 (map boolsToInts isLower)
+      where boolsToInts x = ifThenElse x 1 0
 
     -- * Exercise 4
     upperIndices :: Acc (Vector Int)
