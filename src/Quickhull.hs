@@ -69,14 +69,15 @@ initialPartition points =
     -- * Exercise 3
     lowerIndices :: Acc (Vector Int)
     lowerIndices = prescanl (+) 0 (map boolsToInts isLower)
-      where boolsToInts x = ifThenElse x 1 0
 
     -- * Exercise 4
     upperIndices :: Acc (Vector Int)
     upperIndices = prescanl (+) 0 (map boolsToInts isUpper)
-      where boolsToInts x = ifThenElse x 1 0
     countUpper :: Acc (Scalar Int)
-    countUpper = undefined
+    countUpper = sum (map boolsToInts isUpper)
+
+    boolsToInts :: Exp Bool -> Exp Int
+    boolsToInts x = ifThenElse x 1 0
     --T2 upperIndices countUpper = undefined
 
 
@@ -101,7 +102,7 @@ initialPartition points =
     headFlags :: Acc (Vector Bool)
     headFlags = undefined
   in
-    T2 newHeadFlags newPoints
+    T2 headFlags newPoints
 
 -- * Exercise 8
 segmentedPostscanl :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
