@@ -64,6 +64,8 @@ initialPartition points =
 
     -- * Exercise 4
     upperIndices :: Acc (Vector Int)
+    upperIndices = prescanl (+) 0 (map boolsToInts isUpper)
+      where boolsToInts x = ifThenElse x 1 0
     countUpper :: Acc (Scalar Int)
     T2 upperIndices countUpper = undefined
 
