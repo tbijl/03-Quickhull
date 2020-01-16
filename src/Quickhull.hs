@@ -67,7 +67,8 @@ initialPartition points =
     upperIndices = prescanl (+) 0 (map boolsToInts isUpper)
       where boolsToInts x = ifThenElse x 1 0
     countUpper :: Acc (Scalar Int)
-    T2 upperIndices countUpper = undefined
+    countUpper = undefined
+    --T2 upperIndices countUpper = undefined
 
     -- * Exercise 5
     permutation :: Acc (Vector (Z :. Int))
