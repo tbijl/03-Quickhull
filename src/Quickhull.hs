@@ -16,6 +16,9 @@ import Data.Array.Accelerate.Interpreter
 -- import Data.Array.Accelerate.LLVM.Native
 -- import Data.Array.Accelerate.LLVM.PTX
 
+input1 :: Acc (Vector Point)
+input1 = use $ fromList (Z :. 15) [(1,4),(8,19),(5,9),(7,9),(4,2),(3,9),(9,16),(1,5),(9,11),(4,0),(8,18),(8,7),(7,18),(6,18),(4,19)]
+
 type Point = (Int, Int)
 
 type Line = (Point, Point)
@@ -49,13 +52,19 @@ initialPartition points =
     p1 = the $ leftMostPoint points
     p2 = the $ rightMostPoint points
     line = T2 p1 p2
-
+    doReverse (T2 _ y1) (T2 _ y2) = y1 > y2
     -- * Exercise 2
     isUpper :: Acc (Vector Bool)
-    isUpper = undefined
+    isUpper = ifThenElse (doReverse p1 p2) (map isUpperRev points) (map isUpperNoRev points)
+
+    isUpperNoRev:: Exp Point -> Exp Bool
+    isUpperNoRev point = ifThenElse (point == p1) (constant False) (ifThenElse (point == p2) (constant False) (ifThenElse (pointIsLeftOfLine line point) (constant True) (constant False)))
+
+    isUpperRev:: Exp Point -> Exp Bool
+    isUpperRev point = ifThenElse (point == p1) (constant False) (ifThenElse (point == p2) (constant False) (ifThenElse (pointIsLeftOfLine line point) (constant False) (constant True)))
 
     isLower :: Acc (Vector Bool)
-    isLower = undefined
+    isLower = ifThenElse (doReverse p1 p2) (map isUpperNoRev points) (map isUpperRev points) --Because lower is exactly the opposite of isUpper, we can swap th order of isUpper and resuse these functions
 
     -- * Exercise 3
     lowerIndices :: Acc (Vector Int)
@@ -70,19 +79,20 @@ initialPartition points =
     countUpper = undefined
     --T2 upperIndices countUpper = undefined
 
+
     -- * Exercise 5
     permutation :: Acc (Vector (Z :. Int))
     permutation =
       let
         f :: Exp Point -> Exp Bool -> Exp Int -> Exp Int -> Exp (Z :. Int)
         f p upper idxLower idxUpper
-          = undefined
+          = ifThenElse upper (index1 idxUpper) (index1 idxLower)
       in
         zipWith4 f points isUpper lowerIndices upperIndices
 
     -- * Exercise 6
     empty :: Acc (Vector Point)
-    empty = undefined
+    empty = generate (index1 ((size points) +1)) (\_ -> p1)
 
     newPoints :: Acc (Vector Point)
     newPoints = permute const empty (permutation !) points
@@ -91,7 +101,7 @@ initialPartition points =
     headFlags :: Acc (Vector Bool)
     headFlags = undefined
   in
-    T2 headFlags newPoints
+    T2 newHeadFlags newPoints
 
 -- * Exercise 8
 segmentedPostscanl :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
