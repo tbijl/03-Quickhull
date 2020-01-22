@@ -74,10 +74,7 @@ initialPartition points =
     upperIndices :: Acc (Vector Int)
     upperIndices = prescanl (+) 0 (map boolsToInts isUpper)
     countUpper :: Acc (Scalar Int)
-    countUpper = sum (map boolsToInts isUpper)
-
-    boolsToInts :: Exp Bool -> Exp Int
-    boolsToInts x = ifThenElse x 1 0
+    countUpper = upperIndices !!  ((size upperIndices) -1)
     --T2 upperIndices countUpper = undefined
 
 
