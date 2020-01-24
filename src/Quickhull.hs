@@ -68,13 +68,14 @@ initialPartition points =
 
     -- * Exercise 3
     lowerIndices :: Acc (Vector Int)
-    lowerIndices = prescanl (+) 0 (map boolsToInts isLower)
+    lowerIndices = prescanl (+) 0 (map boolToInt isLower)
 
     -- * Exercise 4
     upperIndices :: Acc (Vector Int)
-    upperIndices = prescanl (+) 0 (map boolsToInts isUpper)
+    upperIndices = prescanl (+) 0 (map boolToInt isUpper)
+    
     countUpper :: Acc (Scalar Int)
-    countUpper = upperIndices !!  ((size upperIndices) -1)
+    countUpper = unit (upperIndices !!  ((size upperIndices) -1))
     --T2 upperIndices countUpper = undefined
 
 
@@ -97,7 +98,7 @@ initialPartition points =
 
     -- * Exercise 7
     headFlags :: Acc (Vector Bool)
-    headFlags = undefined
+    headFlags = fill (index1 1) (constant True) ++ fill (index1 (the countUpper)) (constant False) ++ fill (index1 1) (constant True) ++ fill (index1 ((size newPoints)- 3 - (the countUpper))) (constant False)
   in
     T2 headFlags newPoints
 
