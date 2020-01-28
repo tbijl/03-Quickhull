@@ -104,10 +104,13 @@ initialPartition points =
 
 -- * Exercise 8
 segmentedPostscanl :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
-segmentedPostscanl = undefined
+segmentedPostscanl f headFlags vec = map snd $ scanl1 (convertFunc f) (zip headFlags vec)
 
 segmentedPostscanr :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
-segmentedPostscanr = undefined
+segmentedPostscanr f headFlags vec = map snd $ scanr1 (convertFunc f) (zip headFlags vec)
+
+convertFunc :: Elt a => (Exp a -> Exp a -> Exp a) -> Exp (Bool, a) -> Exp (Bool, a) -> Exp (Bool, a)
+convertFunc f (T2 a v1) (T2 b v2) = T2 (constant False) (f v1 v2)
 
 -- * Exercise 9
 propagateL :: Elt a => Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
