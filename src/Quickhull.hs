@@ -144,7 +144,7 @@ partition (T2 headFlags points) =
 
     -- * Exercise 12
     furthest :: Acc (Vector Point)
-    furthest = undefined
+    furthest = propagateL headFlagsL (segmentedPostscanl max headFlagsL points) --Maybe headFlagR
 
     -- * Exercise 13
     isLeft :: Acc (Vector Bool)
