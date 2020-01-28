@@ -58,13 +58,13 @@ initialPartition points =
     isUpper = ifThenElse (doReverse p1 p2) (map isUpperRev points) (map isUpperNoRev points)
 
     isUpperNoRev:: Exp Point -> Exp Bool
-    isUpperNoRev point = ifThenElse (point == p1) (constant False) (ifThenElse (point == p2) (constant False) (ifThenElse (pointIsLeftOfLine line point) (constant True) (constant False)))
+    isUpperNoRev point = ifThenElse (point == p1 || point == p2) (constant False) (pointIsLeftOfLine line point)
 
     isUpperRev:: Exp Point -> Exp Bool
-    isUpperRev point = ifThenElse (point == p1) (constant False) (ifThenElse (point == p2) (constant False) (ifThenElse (pointIsLeftOfLine line point) (constant False) (constant True)))
+    isUpperRev point = ifThenElse (point == p1 || point == p2) (constant False) (not $ pointIsLeftOfLine line point)
 
     isLower :: Acc (Vector Bool)
-    isLower = ifThenElse (doReverse p1 p2) (map isUpperNoRev points) (map isUpperRev points) --Because lower is exactly the opposite of isUpper, we can swap th order of isUpper and resuse these functions
+    isLower = ifThenElse (doReverse p1 p2) (map isUpperNoRev points) (map isUpperRev points) --Because lower is exactly the opposite of isUpper, we can swap the order of isUpper and resuse these functions
 
     -- * Exercise 3
     lowerIndices :: Acc (Vector Int)
@@ -149,10 +149,17 @@ partition (T2 headFlags points) =
 
     -- * Exercise 13
     isLeft :: Acc (Vector Bool)
-    isLeft = undefined
+    isLeft = zipWith3 combinationFunctionLeft points furthest vecLine
 
+    
+    combinationFunctionLeft :: Exp Point -> Exp Point -> Exp Line -> Exp Bool
+    combinationFunctionLeft point furPoint (T2 p1 _) = pointIsLeftOfLine (T2 p1 furPoint) point 
+      
     isRight :: Acc (Vector Bool)
-    isRight = undefined
+    isRight = zipWith3 combinationFunctionRight points furthest vecLine
+
+    combinationFunctionRight :: Exp Point -> Exp Point -> Exp Line -> Exp Bool 
+    combinationFunctionRight point furPoint (T2 p1 _) = not $ pointIsLeftOfLine (T2 p1 furPoint) point 
 
     -- * Exercise 14
     segmentIdxLeft :: Acc (Vector Int)
