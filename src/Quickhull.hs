@@ -130,10 +130,10 @@ propagateLine (T2 headFlags points) = zip vecP1 vecP2
 
 -- * Exercise 11
 shiftHeadFlagsL :: Acc (Vector Bool) -> Acc (Vector Bool)
-shiftHeadFlagsL flags = undefined
+shiftHeadFlagsL flags = tail flags ++ fill (index1 1) (constant Flase)
 
 shiftHeadFlagsR :: Acc (Vector Bool) -> Acc (Vector Bool)
-shiftHeadFlagsR flags = undefined
+shiftHeadFlagsR flags = fill (index1 1) (constant False) ++ init flags
 
 partition :: Acc SegmentedPoints -> Acc SegmentedPoints
 partition (T2 headFlags points) =
