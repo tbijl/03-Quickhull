@@ -75,7 +75,7 @@ initialPartition points =
     upperIndices = prescanl (+) 0 (map boolToInt isUpper)
     
     countUpper :: Acc (Scalar Int)
-    countUpper = unit (upperIndices !!  ((size upperIndices) -1))
+    countUpper = sum (map (boolToInt) isUpper)
     --T2 upperIndices countUpper = undefined
 
 
@@ -85,7 +85,7 @@ initialPartition points =
       let
         f :: Exp Point -> Exp Bool -> Exp Int -> Exp Int -> Exp (Z :. Int)
         f p upper idxLower idxUpper
-          = ifThenElse upper (index1 idxUpper) (index1 idxLower)
+          = ifThenElse upper (index1 idxUpper) (index1 ((the $ countUpper) + idxLower))
       in
         zipWith4 f points isUpper lowerIndices upperIndices
 
@@ -98,9 +98,10 @@ initialPartition points =
 
     -- * Exercise 7
     headFlags :: Acc (Vector Bool)
-    headFlags = fill (index1 1) (constant True) ++ fill (index1 (the countUpper)) (constant False) ++ fill (index1 1) (constant True) ++ fill (index1 ((size newPoints)- 3 - (the countUpper))) (constant False)
+    headFlags = fill (index1 1) (constant True) ++ fill (index1 (the countUpper)) (constant False) ++ fill (index1 1) (constant True) ++ fill (index1 ((size newPoints)- 3 - (the countUpper))) (constant False) ++ fill (index1 1) (constant True)
   in
-    T2 headFlags newPoints
+    error $ P.show $ run headFlags
+    --T2 headFlags newPoints
 
 -- * Exercise 8
 segmentedPostscanl :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
@@ -151,7 +152,6 @@ partition (T2 headFlags points) =
     isLeft :: Acc (Vector Bool)
     isLeft = zipWith3 combinationFunctionLeft points furthest vecLine
 
-    
     combinationFunctionLeft :: Exp Point -> Exp Point -> Exp Line -> Exp Bool
     combinationFunctionLeft point furPoint (T2 p1 _) = pointIsLeftOfLine (T2 p1 furPoint) point 
       
@@ -163,10 +163,10 @@ partition (T2 headFlags points) =
 
     -- * Exercise 14
     segmentIdxLeft :: Acc (Vector Int)
-    segmentIdxLeft = undefined
+    segmentIdxLeft = segmentedPostscanl (+) headFlags (map boolToInt isLeft)
 
     segmentIdxRight :: Acc (Vector Int)
-    segmentIdxRight = undefined
+    segmentIdxRight = segmentedPostscanl (+) headFlags (map boolToInt isRight)
 
     -- * Exercise 15
     countLeft :: Acc (Vector Int)
