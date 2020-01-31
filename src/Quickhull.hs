@@ -85,7 +85,7 @@ initialPartition points =
       let
         f :: Exp Point -> Exp Bool -> Exp Int -> Exp Int -> Exp (Z :. Int)
         f p upper idxLower idxUpper
-          = ifThenElse upper (index1 idxUpper) (index1 ((the $ countUpper) + idxLower))
+          = ifThenElse (p == p1) (index1 0) (ifThenElse (p == p2) (index1 ((the $ countUpper) + 1)) (ifThenElse (upper) (index1 (idxUpper+1)) (index1 ((the $ countUpper) + idxLower + 2))))
       in
         zipWith4 f points isUpper lowerIndices upperIndices
 
@@ -100,7 +100,7 @@ initialPartition points =
     headFlags :: Acc (Vector Bool)
     headFlags = fill (index1 1) (constant True) ++ fill (index1 (the countUpper)) (constant False) ++ fill (index1 1) (constant True) ++ fill (index1 ((size newPoints)- 3 - (the countUpper))) (constant False) ++ fill (index1 1) (constant True)
   in
-    error $ P.show $ run headFlags
+    error $ P.show $ run permutation
     --T2 headFlags newPoints
 
 -- * Exercise 8
