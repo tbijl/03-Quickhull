@@ -130,7 +130,7 @@ propagateLine (T2 headFlags points) = zip vecP1 vecP2
 
 -- * Exercise 11
 shiftHeadFlagsL :: Acc (Vector Bool) -> Acc (Vector Bool)
-shiftHeadFlagsL flags = tail flags ++ fill (index1 1) (constant Flase)
+shiftHeadFlagsL flags = tail flags ++ fill (index1 1) (constant False)
 
 shiftHeadFlagsR :: Acc (Vector Bool) -> Acc (Vector Bool)
 shiftHeadFlagsR flags = fill (index1 1) (constant False) ++ init flags
