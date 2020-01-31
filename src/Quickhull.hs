@@ -170,7 +170,7 @@ partition (T2 headFlags points) =
 
     -- * Exercise 15
     countLeft :: Acc (Vector Int)
-    countLeft = undefined
+    countLeft = segmentedPostscanr max headFlags points --GEEN idee of dit klopt
 
     -- * Exercise 16
     segmentSize :: Acc (Vector Int)
@@ -192,10 +192,10 @@ partition (T2 headFlags points) =
 
     -- * Exercise 18
     empty :: Acc (Vector Point)
-    empty = undefined
+    empty = generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
 
     newPoints :: Acc (Vector Point)
-    newPoints = undefined
+    newPoints = permute const empty (permutation !) points --Kan zo blijven, blijkbaar
 
     -- * Exercise 19
     newHeadFlags :: Acc (Vector Bool)
