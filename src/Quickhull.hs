@@ -179,24 +179,21 @@ partition (T2 headFlags points) =
     -- * Exercise 15
     countLeft :: Acc (Vector Int)
     countLeft = propagateR headFlagsL segmentIdxLeft
-
-    -- * Exercise 16                --Groottes kunnen ook met segmentend scan + zoals count left
-    segmentSize :: Acc (Vector Int) --Als je alle indices en groottes van elke hebt dan kan je het zo maken dat je mapt op die lijst dan 1 + fill (hoeveelheid-1) 0 ++ fill (1) hoeveelheid 
-    segmentSize = undefined
     
-    tempFunc :: Exp Int -> Exp Int -> Exp Int
-    tempFunc prev now = now - prev
+    -- * Exercise 16                
+    segmentSize :: Acc (Vector Int) 
+    segmentSize = zipWith segHelperFlags headFlags (zipWith3 segHelperVals headFlagsL segmentIdxLeft segmentIdxRight)
 
-    trueIndices :: Acc (Vector Int)
-    trueIndices = afst $ filter (>= 0) (zipWith (\bool ind -> ifThenElse bool ind (-1)) headFlags (generateRange (length points)))
+    segHelperVals :: Exp Bool -> Exp Int -> Exp Int -> Exp Int
+    segHelperVals hf idL idR = ifThenElse hf (idL + idR + 1) 0
 
-    generateRange :: Exp Int -> Acc (Vector Int)
-    generateRange len = generate (index1 len) (\x -> unindex1 x)
-
+    segHelperFlags :: Exp Bool -> Exp Int -> Exp Int
+    segHelperFlags headFlag currVal = ifThenElse headFlag 1 currVal
 
     segmentOffset :: Acc (Vector Int)
     size :: Acc (Scalar Int)
-    T2 segmentOffset size = undefined
+    T2 segmentOffset size = T2 (take ((length scanResult)-1) scanResult) (unit (scanResult !! ((length scanResult)-1)))
+     where scanResult = scanl (+) 0 segmentSize
 
     -- * Exercise 17
     permutation :: Acc (Vector (Z :. Int))
@@ -210,7 +207,7 @@ partition (T2 headFlags points) =
 
     -- * Exercise 18
     empty :: Acc (Vector Point)
-    empty = fill (index1 (length points)) Unsafe.undef--generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
+    empty = fill (index1 (the $ size)) Unsafe.undef--generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
 
     newPoints :: Acc (Vector Point)
     newPoints = permute const empty (permutation !) points --Kan zo blijven, blijkbaar
@@ -219,7 +216,7 @@ partition (T2 headFlags points) =
     newHeadFlags :: Acc (Vector Bool)
     newHeadFlags = undefined
   in
-    error $ P.show $ run countLeft
+    error $ P.show $ run size
     --T2 newHeadFlags newPoints
 
 -- * Exercise 20
