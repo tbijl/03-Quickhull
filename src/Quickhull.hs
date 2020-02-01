@@ -228,7 +228,7 @@ condition = undefined
 
 -- * Exercise 21
 quickhull' :: Acc (Vector Point) -> Acc (Vector Point)
-quickhull' = undefined
+quickhull' x = asnd $ awhile condition partition (initialPartition x)
 
 quickhull :: Vector Point -> Vector Point
 quickhull = run1 quickhull'
