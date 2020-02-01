@@ -158,13 +158,16 @@ partition (T2 headFlags points) =
     isLeft = zipWith3 combinationFunctionLeft points furthest vecLine
 
     combinationFunctionLeft :: Exp Point -> Exp Point -> Exp Line -> Exp Bool
-    combinationFunctionLeft point furPoint (T2 p1 _) = pointIsLeftOfLine (T2 p1 furPoint) point 
-      
+    combinationFunctionLeft testPoint furthest (T2 p1 _) = pointIsLeftOfLine (T2 p1 furthest) testPoint
+
     isRight :: Acc (Vector Bool)
     isRight = zipWith3 combinationFunctionRight points furthest vecLine
 
-    combinationFunctionRight :: Exp Point -> Exp Point -> Exp Line -> Exp Bool 
-    combinationFunctionRight point furPoint (T2 p1 _) = not $ pointIsLeftOfLine (T2 p1 furPoint) point 
+    combinationFunctionRight :: Exp Point -> Exp Point -> Exp Line -> Exp Bool
+    combinationFunctionRight testPoint furthest (T2 _ p2) = pointIsRightOfLine (T2 p2 furthest) testPoint
+
+    pointIsRightOfLine :: Exp Line -> Exp Point -> Exp Bool
+    pointIsRightOfLine line point = (not (pointIsLeftOfLine line point) && (not (nonNormalizedDistance line point == 0)))
 
     -- * Exercise 14
     segmentIdxLeft :: Acc (Vector Int)
@@ -207,7 +210,7 @@ partition (T2 headFlags points) =
 
     -- * Exercise 18
     empty :: Acc (Vector Point)
-    empty = undefined --generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
+    empty = fill (index1 (length points)) Unsafe.undef--generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
 
     newPoints :: Acc (Vector Point)
     newPoints = permute const empty (permutation !) points --Kan zo blijven, blijkbaar
@@ -216,7 +219,7 @@ partition (T2 headFlags points) =
     newHeadFlags :: Acc (Vector Bool)
     newHeadFlags = undefined
   in
-    error $ P.show $ run furthest
+    error $ P.show $ run countLeft
     --T2 newHeadFlags newPoints
 
 -- * Exercise 20
