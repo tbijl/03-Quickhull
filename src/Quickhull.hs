@@ -146,12 +146,9 @@ partition (T2 headFlags points) =
     headFlagsL = shiftHeadFlagsL headFlags
     headFlagsR = shiftHeadFlagsR headFlags
 
-    tempVecLine :: Acc (Vector Line) --Remove Later and subisite everywhere in code for vecLine, now a problem with postSegscanr
-    tempVecLine = fill (index1 1) (constant ((0,0),(0,0))) ++  fill (index1 8) (constant (((1, 4),(9, 16)))) ++ fill (index1 1) (constant ((0,0),(0,0))) ++ fill (index1 5) (constant (((9, 16),(1, 4)))) ++ fill (index1 1) (constant ((0,0),(0,0)))
-
     -- * Exercise 12
     furthest :: Acc (Vector Point)
-    furthest = propagateR headFlagsL (map fst $ (segmentedPostscanl getFurtherPoint headFlags (zip points tempVecLine)))
+    furthest = propagateR headFlagsL (map fst $ (segmentedPostscanl getFurtherPoint headFlags (zip points vecLine)))
 
     getFurtherPoint :: Exp (Point, Line) -> Exp (Point, Line) -> Exp (Point, Line)
     getFurtherPoint (T2 prevPoint _) (T2 currPoint line) = ifThenElse ((nonNormalizedDistance line prevPoint) > (nonNormalizedDistance line currPoint)) (T2 prevPoint line) (T2 currPoint line)
