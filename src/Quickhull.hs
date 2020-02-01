@@ -178,7 +178,7 @@ partition (T2 headFlags points) =
 
     -- * Exercise 15
     countLeft :: Acc (Vector Int)
-    countLeft = propagateL headFlagsR segmentIdxLeft
+    countLeft = propagateR headFlagsL segmentIdxLeft
 
     -- * Exercise 16                --Groottes kunnen ook met segmentend scan + zoals count left
     segmentSize :: Acc (Vector Int) --Als je alle indices en groottes van elke hebt dan kan je het zo maken dat je mapt op die lijst dan 1 + fill (hoeveelheid-1) 0 ++ fill (1) hoeveelheid 
