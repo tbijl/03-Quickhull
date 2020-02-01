@@ -211,7 +211,7 @@ partition (T2 headFlags points) =
                 condB = ifThenElse flag (index1 offset) (condC) --Put the headflags at the segOffset
                 condC = ifThenElse (p == furthestP) (index1 (offset + cntLeft)) condD -- put the furthest point at segOffset + cntLeft
                 condD = ifThenElse left (index1 (idxLeft + offset - 1)) condE -- put a left value at leftIdx + segOffset - 1
-                condE = ifThenElse right (index1 (cntLeft + idxRight + cntLeft)) Unsafe.undef --It should never be able to reach the undef
+                condE = ifThenElse right (index1 (cntLeft + idxRight + offset)) Unsafe.undef --It should never be able to reach the undef
       in
         zipWith9 f headFlags points furthest isLeft isRight segmentOffset countLeft segmentIdxLeft segmentIdxRight
 
