@@ -151,7 +151,7 @@ partition (T2 headFlags points) =
 
     -- * Exercise 12
     furthest :: Acc (Vector Point)
-    furthest = propagateL headFlagsL (map fst $ (segmentedPostscanl getFurtherPoint headFlags (zip points tempVecLine)))
+    furthest = propagateR headFlagsL (map fst $ (segmentedPostscanl getFurtherPoint headFlags (zip points tempVecLine)))
 
     getFurtherPoint :: Exp (Point, Line) -> Exp (Point, Line) -> Exp (Point, Line)
     getFurtherPoint (T2 prevPoint _) (T2 currPoint line) = ifThenElse ((nonNormalizedDistance line prevPoint) > (nonNormalizedDistance line currPoint)) (T2 prevPoint line) (T2 currPoint line)
