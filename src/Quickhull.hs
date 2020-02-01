@@ -100,19 +100,21 @@ initialPartition points =
     headFlags :: Acc (Vector Bool)
     headFlags = fill (index1 1) (constant True) ++ fill (index1 (the countUpper)) (constant False) ++ fill (index1 1) (constant True) ++ fill (index1 ((size newPoints)- 3 - (the countUpper))) (constant False) ++ fill (index1 1) (constant True)
   in
-    error $ P.show $ run permutation
-    --T2 headFlags newPoints
+    --error $ P.show $ run permutation
+    T2 headFlags newPoints
 
 -- * Exercise 8
 segmentedPostscanl :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
-segmentedPostscanl f headFlags vec = map snd $ scanl1 (segmented f) (zip headFlags vec)
+segmentedPostscanl f headFlags vec = map snd $ postscanl (segmentedL f) (Unsafe.undef) (zip headFlags vec)
 
 segmentedPostscanr :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
-segmentedPostscanr f headFlags vec = map snd $ scanr1 (segmented f) (zip headFlags vec)
+segmentedPostscanr f headFlags vec = map snd $ postscanr (segmentedR f) (Unsafe.undef) (zip headFlags vec)
 
-segmented :: Elt a => (Exp a -> Exp a -> Exp a) -> (Exp (Bool, a) -> Exp (Bool, a) -> Exp (Bool, a))
-segmented op (T2 fx x) (T2 fy y) = T2 ( fx || fy ) ( fy ? (y, op x y) )
+segmentedL :: Elt a => (Exp a -> Exp a -> Exp a) -> (Exp (Bool, a) -> Exp (Bool, a) -> Exp (Bool, a))
+segmentedL op (T2 fx x) (T2 fy y) = T2 ( fx || fy ) ( fy ? (y, op x y) )
 
+segmentedR :: Elt a => (Exp a -> Exp a -> Exp a) -> (Exp (Bool, a) -> Exp (Bool, a) -> Exp (Bool, a))
+segmentedR op (T2 fx x) (T2 fy y) = T2 ( fx || fy ) ( fx ? (x, op x y) )
 
 -- * Exercise 9
 propagateL :: Elt a => Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
@@ -144,9 +146,15 @@ partition (T2 headFlags points) =
     headFlagsL = shiftHeadFlagsL headFlags
     headFlagsR = shiftHeadFlagsR headFlags
 
+    tempVecLine :: Acc (Vector Line) --Remove Later and subisite everywhere in code for vecLine, now a problem with postSegscanr
+    tempVecLine = fill (index1 1) (constant ((0,0),(0,0))) ++  fill (index1 8) (constant (((1, 4),(9, 16)))) ++ fill (index1 1) (constant ((0,0),(0,0))) ++ fill (index1 5) (constant (((9, 16),(1, 4)))) ++ fill (index1 1) (constant ((0,0),(0,0)))
+
     -- * Exercise 12
     furthest :: Acc (Vector Point)
-    furthest = propagateL headFlagsL (segmentedPostscanl max headFlagsL points) --Maybe headFlagR
+    furthest = propagateL headFlagsL (map fst $ (segmentedPostscanl getFurtherPoint headFlags (zip points tempVecLine)))
+
+    getFurtherPoint :: Exp (Point, Line) -> Exp (Point, Line) -> Exp (Point, Line)
+    getFurtherPoint (T2 prevPoint _) (T2 currPoint line) = ifThenElse ((nonNormalizedDistance line prevPoint) > (nonNormalizedDistance line currPoint)) (T2 prevPoint line) (T2 currPoint line)
 
     -- * Exercise 13
     isLeft :: Acc (Vector Bool)
@@ -170,11 +178,21 @@ partition (T2 headFlags points) =
 
     -- * Exercise 15
     countLeft :: Acc (Vector Int)
-    countLeft = segmentedPostscanr max headFlags points --GEEN idee of dit klopt
+    countLeft = propagateL headFlagsR segmentIdxLeft
 
-    -- * Exercise 16
-    segmentSize :: Acc (Vector Int)
+    -- * Exercise 16                --Groottes kunnen ook met segmentend scan + zoals count left
+    segmentSize :: Acc (Vector Int) --Als je alle indices en groottes van elke hebt dan kan je het zo maken dat je mapt op die lijst dan 1 + fill (hoeveelheid-1) 0 ++ fill (1) hoeveelheid 
     segmentSize = undefined
+    
+    tempFunc :: Exp Int -> Exp Int -> Exp Int
+    tempFunc prev now = now - prev
+
+    trueIndices :: Acc (Vector Int)
+    trueIndices = afst $ filter (>= 0) (zipWith (\bool ind -> ifThenElse bool ind (-1)) headFlags (generateRange (length points)))
+
+    generateRange :: Exp Int -> Acc (Vector Int)
+    generateRange len = generate (index1 len) (\x -> unindex1 x)
+
 
     segmentOffset :: Acc (Vector Int)
     size :: Acc (Scalar Int)
@@ -192,7 +210,7 @@ partition (T2 headFlags points) =
 
     -- * Exercise 18
     empty :: Acc (Vector Point)
-    empty = generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
+    empty = undefined --generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
 
     newPoints :: Acc (Vector Point)
     newPoints = permute const empty (permutation !) points --Kan zo blijven, blijkbaar
@@ -201,7 +219,8 @@ partition (T2 headFlags points) =
     newHeadFlags :: Acc (Vector Bool)
     newHeadFlags = undefined
   in
-    T2 newHeadFlags newPoints
+    error $ P.show $ run furthest
+    --T2 newHeadFlags newPoints
 
 -- * Exercise 20
 condition :: Acc SegmentedPoints -> Acc (Scalar Bool)
