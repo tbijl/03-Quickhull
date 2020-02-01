@@ -221,7 +221,7 @@ partition (T2 headFlags points) =
 
 -- * Exercise 20
 condition :: Acc SegmentedPoints -> Acc (Scalar Bool)
-condition = undefined
+condition x = fold (||) (constant False) (afst x)
 
 -- * Exercise 21
 quickhull' :: Acc (Vector Point) -> Acc (Vector Point)
