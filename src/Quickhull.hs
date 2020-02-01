@@ -16,9 +16,6 @@ import Data.Array.Accelerate.Interpreter
 -- import Data.Array.Accelerate.LLVM.Native
 -- import Data.Array.Accelerate.LLVM.PTX
 
-input1 :: Acc (Vector Point)
-input1 = use $ fromList (Z :. 15) [(1,4),(8,19),(5,9),(7,9),(4,2),(3,9),(9,16),(1,5),(9,11),(4,0),(8,18),(8,7),(7,18),(6,18),(4,19)]
-
 type Point = (Int, Int)
 
 type Line = (Point, Point)
@@ -100,7 +97,6 @@ initialPartition points =
     headFlags :: Acc (Vector Bool)
     headFlags = fill (index1 1) (constant True) ++ fill (index1 (the countUpper)) (constant False) ++ fill (index1 1) (constant True) ++ fill (index1 ((size newPoints)- 3 - (the countUpper))) (constant False) ++ fill (index1 1) (constant True)
   in
-    --error $ P.show $ run permutation
     T2 headFlags newPoints
 
 -- * Exercise 8
@@ -135,9 +131,11 @@ propagateLine (T2 headFlags points) = zip vecP1 vecP2
 -- * Exercise 11
 shiftHeadFlagsL :: Acc (Vector Bool) -> Acc (Vector Bool)
 shiftHeadFlagsL flags = tail flags ++ fill (index1 1) (constant False)
+--                      All items except the first + a False
 
 shiftHeadFlagsR :: Acc (Vector Bool) -> Acc (Vector Bool)
 shiftHeadFlagsR flags = fill (index1 1) (constant False) ++ init flags
+--                      A flase + all items except the last
 
 partition :: Acc SegmentedPoints -> Acc SegmentedPoints
 partition (T2 headFlags points) =
@@ -238,7 +236,7 @@ partition (T2 headFlags points) =
 
 -- * Exercise 20
 condition :: Acc SegmentedPoints -> Acc (Scalar Bool)
-condition x = fold (||) (constant False) (afst x)
+condition x = fold (||) (constant False) (afst x) -- The Fold will only be True if there's no False value left
 
 -- * Exercise 21
 quickhull' :: Acc (Vector Point) -> Acc (Vector Point)
