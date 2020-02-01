@@ -57,9 +57,11 @@ initialPartition points =
     isUpper :: Acc (Vector Bool)
     isUpper = ifThenElse (doReverse p1 p2) (map isUpperRev points) (map isUpperNoRev points)
 
+    --The normal version of isUpper. use this for a line with a positive increment
     isUpperNoRev:: Exp Point -> Exp Bool
     isUpperNoRev point = ifThenElse (point == p1 || point == p2) (constant False) (pointIsLeftOfLine line point)
 
+    --The reverse version of isUpper, use this for a line with a negative increment
     isUpperRev:: Exp Point -> Exp Bool
     isUpperRev point = ifThenElse (point == p1 || point == p2) (constant False) (not $ pointIsLeftOfLine line point)
 
@@ -76,8 +78,6 @@ initialPartition points =
     
     countUpper :: Acc (Scalar Int)
     countUpper = sum (map (boolToInt) isUpper)
-    --T2 upperIndices countUpper = undefined
-
 
     -- * Exercise 5
     permutation :: Acc (Vector (Z :. Int))
@@ -110,9 +110,11 @@ segmentedPostscanl f headFlags vec = map snd $ postscanl (segmentedL f) (Unsafe.
 segmentedPostscanr :: Elt a => (Exp a -> Exp a -> Exp a) -> Acc (Vector Bool) -> Acc (Vector a) -> Acc (Vector a)
 segmentedPostscanr f headFlags vec = map snd $ postscanr (segmentedR f) (Unsafe.undef) (zip headFlags vec)
 
+--The segmented left version of a function f
 segmentedL :: Elt a => (Exp a -> Exp a -> Exp a) -> (Exp (Bool, a) -> Exp (Bool, a) -> Exp (Bool, a))
 segmentedL op (T2 fx x) (T2 fy y) = T2 ( fx || fy ) ( fy ? (y, op x y) )
 
+--The segmented right version of a function f
 segmentedR :: Elt a => (Exp a -> Exp a -> Exp a) -> (Exp (Bool, a) -> Exp (Bool, a) -> Exp (Bool, a))
 segmentedR op (T2 fx x) (T2 fy y) = T2 ( fx || fy ) ( fx ? (x, op x y) )
 
@@ -157,15 +159,18 @@ partition (T2 headFlags points) =
     isLeft :: Acc (Vector Bool)
     isLeft = zipWith3 combinationFunctionLeft points furthest vecLine
 
+    --Create a new line from p1 to furthest, check if testPoint lies on the left of this line
     combinationFunctionLeft :: Exp Point -> Exp Point -> Exp Line -> Exp Bool
     combinationFunctionLeft testPoint furthest (T2 p1 _) = pointIsLeftOfLine (T2 p1 furthest) testPoint
 
     isRight :: Acc (Vector Bool)
     isRight = zipWith3 combinationFunctionRight points furthest vecLine
 
+    --Create a new line from p2 to furthest, check if testPoint lies on the right of this line
     combinationFunctionRight :: Exp Point -> Exp Point -> Exp Line -> Exp Bool
     combinationFunctionRight testPoint furthest (T2 _ p2) = pointIsRightOfLine (T2 p2 furthest) testPoint
 
+    --Returns true if point is on the right of the line
     pointIsRightOfLine :: Exp Line -> Exp Point -> Exp Bool
     pointIsRightOfLine line point = (not (pointIsLeftOfLine line point) && (not (nonNormalizedDistance line point == 0)))
 
@@ -184,14 +189,16 @@ partition (T2 headFlags points) =
     segmentSize :: Acc (Vector Int) 
     segmentSize = zipWith segHelperFlags headFlags (zipWith3 segHelperVals headFlagsL segmentIdxLeft segmentIdxRight)
 
+    --Insert the segment size values
     segHelperVals :: Exp Bool -> Exp Int -> Exp Int -> Exp Int
     segHelperVals hf idL idR = ifThenElse hf (idL + idR + 1) 0
 
+    --Insert the 1's for the headFlags, otherwise keep the previous value
     segHelperFlags :: Exp Bool -> Exp Int -> Exp Int
     segHelperFlags headFlag currVal = ifThenElse headFlag 1 currVal
 
     segmentOffset :: Acc (Vector Int)
-    size :: Acc (Scalar Int)
+    size :: Acc (Scalar Int) --Remove the last value, due to inclusive scan     --The last result of the array is the total size
     T2 segmentOffset size = T2 (take ((length scanResult)-1) scanResult) (unit (scanResult !! ((length scanResult)-1)))
      where scanResult = scanl (+) 0 segmentSize
 
@@ -201,20 +208,21 @@ partition (T2 headFlags points) =
       let
         f :: Exp Bool -> Exp Point -> Exp Point -> Exp Bool -> Exp Bool -> Exp Int -> Exp Int -> Exp Int -> Exp Int -> Exp (Z :. Int)
         f flag p furthestP left right offset cntLeft idxLeft idxRight
-          = undefined
+          = ifThenElse (not (flag && (p == furthest) && isLeft && isRight)) ignore (ifThenElse flag (offset + idxLeft) )
       in
         zipWith9 f headFlags points furthest isLeft isRight segmentOffset countLeft segmentIdxLeft segmentIdxRight
 
     -- * Exercise 18
     empty :: Acc (Vector Point)
-    empty = fill (index1 (the $ size)) Unsafe.undef--generate (index1 ((size points) +1)) (\_ -> p1) --Moet nog veranderd worden!! 16 moet gebruikt worden blijkbaar, en p1 bestaat niet lol
+    empty = fill (index1 (the $ size)) Unsafe.undef
 
     newPoints :: Acc (Vector Point)
-    newPoints = permute const empty (permutation !) points --Kan zo blijven, blijkbaar
+    newPoints = permute const empty (permutation !) points
 
     -- * Exercise 19
     newHeadFlags :: Acc (Vector Bool)
-    newHeadFlags = undefined
+    newHeadFlags = zipWith3 f furthest point headFlag
+     where f furthestPoint point flag = ifThenElse flag (point == furthestPoint)
   in
     error $ P.show $ run size
     --T2 newHeadFlags newPoints
