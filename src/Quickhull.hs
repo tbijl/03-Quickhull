@@ -208,7 +208,12 @@ partition (T2 headFlags points) =
       let
         f :: Exp Bool -> Exp Point -> Exp Point -> Exp Bool -> Exp Bool -> Exp Int -> Exp Int -> Exp Int -> Exp Int -> Exp (Z :. Int)
         f flag p furthestP left right offset cntLeft idxLeft idxRight
-          = ifThenElse (not (flag && (p == furthest) && isLeft && isRight)) ignore (ifThenElse flag (offset + idxLeft) )
+          = condA
+          where condA = ifThenElse (not flag && not (p == furthestP) && not left && not right) ignore condB --Decide which to ignore (for some reason we had to put not in front of each one instead of 1 infront of the big thing)
+                condB = ifThenElse flag (index1 offset) (condC) --Put the headflags at the segOffset
+                condC = ifThenElse (p == furthestP) (index1 (offset + cntLeft)) condD -- put the furthest point at segOffset + cntLeft
+                condD = ifThenElse left (index1 (idxLeft + offset - 1)) condE -- put a left value at leftIdx + segOffset - 1
+                condE = ifThenElse right (index1 (cntLeft + idxRight + cntLeft)) Unsafe.undef --It should never be able to reach the undef
       in
         zipWith9 f headFlags points furthest isLeft isRight segmentOffset countLeft segmentIdxLeft segmentIdxRight
 
@@ -221,11 +226,15 @@ partition (T2 headFlags points) =
 
     -- * Exercise 19
     newHeadFlags :: Acc (Vector Bool)
-    newHeadFlags = zipWith3 f furthest point headFlag
-     where f furthestPoint point flag = ifThenElse flag (point == furthestPoint)
+    newHeadFlags = permute const baseArray (permutation !) sourceValues
+     where sourceValues = zipWith3 mergeFunc furthest points headFlags
+           baseArray = fill (index1 (the $ size)) (constant False)
+    
+    mergeFunc :: Exp Point -> Exp Point -> Exp Bool -> Exp Bool
+    mergeFunc furthestPoint point flag = ifThenElse flag (constant True) (point == furthestPoint)
+ 
   in
-    error $ P.show $ run size
-    --T2 newHeadFlags newPoints
+    T2 newHeadFlags newPoints
 
 -- * Exercise 20
 condition :: Acc SegmentedPoints -> Acc (Scalar Bool)
