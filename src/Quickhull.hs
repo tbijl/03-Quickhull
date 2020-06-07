@@ -29,6 +29,9 @@ pointIsLeftOfLine (T2 (T2 x1 y1) (T2 x2 y2)) (T2 x y) = nx * x + ny * y > c
     ny = x2 - x1
     c = nx * x1 + ny * y1
 
+input1 :: Acc (Vector Point)
+input1 = use $ fromList (Z :. 15) [(1,4),(8,19),(5,9),(7,9),(4,2),(3,9),(9,16),(1,5),(9,11),(4,0),(8,18),(8,7),(7,18),(6,18),(4,19)]
+
 nonNormalizedDistance :: Exp Line -> Exp Point -> Exp Int
 nonNormalizedDistance (T2 (T2 x1 y1) (T2 x2 y2)) (T2 x y) = nx * x + ny * y - c
   where
